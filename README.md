@@ -38,7 +38,7 @@ The XDR Incident Creation is managed by the **create_XDR_incident.py** script. Y
 
 This is exactly the same script a little bit modified for fitting to this use case, and use as a ressource by the **1-analyse_log.py** script.
 
-The **1-analyse_log.py** contains the Threat Detection engine. This is a partern matching engine which search for signatures into every log file lines. Patern search is based an compiled regex and is relly reasonably fast !!.
+The **1-analyse_log.py** contains the Threat Detection engine. This is a partern matching engine which search for signatures into every log file lines. Patern search is based an compiled regex and is really reasonably fast !!.
 
 That means that the script will go fast enough for scanning big log files. Performance is not really the goal but still.
 
@@ -46,19 +46,21 @@ That means that the first operation done by the script is to load all signatures
 
 Signatures are located into the JSON file named **sigs.json** located in the **./signatures** subdirectory. These signatures are inspired from an old version of the PHPIDS project which has a good reputation in terms of Web Attack Detection. 
 
-This signature file contains 80 Web Attack signatures. Detected attacks are classified into categories ( xss, sqli, directory traversall,... ) which appear into the report. 
+This signature file contains 80 Web Attack signatures. Detected attacks are classified into categories ( xss, sqli, directory traversal,etc... ) which appear into the report. 
 
 Detection Rate is not the purpose of this article, but these PHPIDS signatures disearve a dedicated article. One sequel of this project will certainly be to detect a maximum of web attacks with the smaller signatures files as possible.
 
-The JSON format makes it very easy to understand and to modify. You can easily add your own signatures. For example log4J signatures are missing in this version. This can become an intersting challenge
+The JSON format makes it very easy to understand and to modify. You can easily add your own signatures. For example log4J signatures are missing in this version. This can become an interesting additionnal challenge.
 
 Don't hesitate to have a look to the signature file and modify it.
 
 So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is in our case a very basic correlation step :
 
-We save the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same IP address.
+We save the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same IP address. We keep into a global list a single instance of every malicious IP address.
 
-That means that we decide to promote to XDR Incident only one Threat.
+That means that in this project we decide to promote to XDR Incident only one detected Threat. 
 
-### How the Threat Detection engine work
+Incident promotion is done when we create the resulting file into the **def generate_text_file()** function of the **1-analyse_log.py** script. So this is really another step that happen only when partner matching search is done into the whole log file.
+
+In this part of the code, we pass the list of the malicious IP addresse to the **create_json_observables()** function which create the JSON payloads for observables, target and observable_relationships.
 
