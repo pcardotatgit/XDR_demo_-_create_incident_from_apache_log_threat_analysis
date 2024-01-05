@@ -1,2 +1,64 @@
-# XDR_demo_-_create_incident_from_apache_log_threat_analysis
-create an XDR incident from Attack Detection into apache log
+# Create an XDR incident from Attack Detection into apache log
+
+This script is a proof of concept of creation of an XDR Incident from a security log file analysis.
+
+In this proof of concept we apply what we learned in the [XDR_create_incident_with_python ](https://github.com/pcardotatgit/XDR_create_incident_with_python) article to a realistic use case.
+
+In the article mentionned above we created an XDR Incident from static demo data. In this article we dynamically create the XDR Incident data from Threat Analysis done on a apache access log file.
+
+This use case is a good example of somethoing to deploy in production. It is very easy to deploy.
+
+You just have to setup a Honeypot Apache Web Server, expose it on the INTERNET and install into it the apache log analyser described here and that's it.
+
+Within a few hours your web server will be discovered by INTERNET Bots and you will see Web attacks coming. 
+
+These attackes will be visible into the apache access.log file. 
+
+Then you just have to run the application to collect a list of malicious public IP addresses that try to hack your web server and from this create XDR Incident and next add these malicious IP addresses to your XDR blocking feed.
+
+But in order to make this use case pedagogic I added some specifications to the application.
+
+## How the application work ?
+
+For this use case the apache log file named **access.log** is located into the  **./input_log_file** subdirectory.
+
+The application reads it and apply on every line of the log file a partern matching string search for common signature we used to find into Web Attacks. 
+
+Every threat detected is logged into a resulting report file.
+
+The result of the analysis will be located into the **./out** directory. And will contain absolutely every threats detected into the log file.
+
+But only one of this threats will create an **XDR Incident**. This is the **Admin Access Attempt to phpmyadmin threat** which is easily visible into the apache log file. And we decide to add to the Incident only source IP addresses which try to get access to phpmyadmin thru brute force more than 10 times.
+
+This is an arbitrary rule we decide, because that one seems to be good to filter IP source addresses which show real malicious intentions. These malicious IP addresses are 100 % confirmed malicious. 
+
+The core of the application is the **1-analyse_log.py** script. This is the script to run.
+
+The XDR Incident Creation is managed by the **create_XDR_incident.py** script. You will probably recognize it if you went thru the [XDR_create_incident_with_python ](https://github.com/pcardotatgit/XDR_create_incident_with_python) article.
+
+This is exactly the same script a little bit modified for fitting to this use case, and use as a ressource by the **1-analyse_log.py** script.
+
+The **1-analyse_log.py** contains the Threat Detection engine. This is a partern matching engine which search for signatures into every log file lines. Patern search is based an compiled regex and is relly reasonably fast !!.
+
+That means that the script will go fast enough for scanning big log files. Performance is not really the goal but still.
+
+That means that the first operation done by the script is to load all signatures before going to analysis. 
+
+Signatures are located into the JSON file named **sigs.json** located in the **./signatures** subdirectory. These signatures are inspired from an old version of the PHPIDS project which has a good reputation in terms of Web Attack Detection. 
+
+This signature file contains 80 Web Attack signatures. Detected attacks are classified into categories ( xss, sqli, directory traversall,... ) which appear into the report. 
+
+Detection Rate is not the purpose of this article, but these PHPIDS signatures disearve a dedicated article. One sequel of this project will certainly be to detect a maximum of web attacks with the smaller signatures files as possible.
+
+The JSON format makes it very easy to understand and to modify. You can easily add your own signatures. For example log4J signatures are missing in this version. This can become an intersting challenge
+
+Don't hesitate to have a look to the signature file and modify it.
+
+So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is in our case a very basic correlation step :
+
+We save the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same IP address.
+
+That means that we decide to promote to XDR Incident only one Threat.
+
+### How the Threat Detection engine work
+
