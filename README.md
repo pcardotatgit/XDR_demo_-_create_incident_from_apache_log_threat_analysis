@@ -44,11 +44,7 @@ That means that the script will go fast enough for scanning big log files. Perfo
 
 That means that the first operation done by the script is to load all signatures before going to analysis. 
 
-Signatures are located into the JSON file named **sigs.json** located in the **./signatures** subdirectory. These signatures are inspired from an old version of the PHPIDS project which has a good reputation in terms of Web Attack Detection. 
-
-This signature file contains 80 Web Attack signatures. Detected attacks are classified into categories ( xss, sqli, directory traversal,etc... ) which appear into the report. 
-
-Detection Rate is not the purpose of this article, but these PHPIDS signatures disearve a dedicated article. One sequel of this project will certainly be to detect a maximum of web attacks with the smaller signatures files as possible.
+Signatures are located into the JSON file named **sigs.json** located in the **./signatures** subdirectory. 
 
 The JSON format makes it very easy to understand and to modify. You can easily add your own signatures. For example log4J signatures are missing in this version. This can become an interesting additionnal challenge.
 
@@ -60,7 +56,9 @@ We save the source IP addresses of the **Admin access attempt on MySQL database 
 
 That means that in this project we decide to promote to XDR Incident only one detected Threat. 
 
-Incident promotion is done when we create the resulting file into the **def generate_text_file()** function of the **1-analyse_log.py** script. So this is really another step that happen only when partner matching search is done into the whole log file.
+Incident promotion is done when we create the resulting file into the **def generate_text_file()** function of the **1-analyse_log.py** script. So this is really another step that happen only after partner matching search is done into the whole log file.
 
-In this part of the code, we pass the list of the malicious IP addresse to the **create_json_observables()** function which create the JSON payloads for observables, target and observable_relationships.
+In this part of the code, we pass the list of the malicious IP addresse to the **create_json_observables()** function which create the JSON payloads for observables and observable_relationships. Regarding the target JSON payload, as we only have one target ( the webe server ) and we know it I decided to declare it into static variable. 
+
+The next step is to pass these payloads as argument to the **def create_sighting_object(xid,title,observables,targets,observable_relationships,confidence,description,source,tlp,severity)** function of the **1-analyse_log.py** script.  This is where we link the main script to the **create_XDR_incident.py** script which is dedicated to XDR Incident creation.
 
