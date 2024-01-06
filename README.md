@@ -60,5 +60,22 @@ Incident promotion is done when we create the resulting file into the **def gene
 
 In this part of the code, we pass the list of the malicious IP addresse to the **create_json_observables()** function which create the JSON payloads for observables and observable_relationships. Regarding the target JSON payload, as we only have one target ( the webe server ) and we know it I decided to declare it into static variable. 
 
-The next step is to pass these payloads as argument to the **def create_sighting_object(xid,title,observables,targets,observable_relationships,confidence,description,source,tlp,severity)** function of the **1-analyse_log.py** script.  This is where we link the main script to the **create_XDR_incident.py** script which is dedicated to XDR Incident creation.
+The next step is to pass these payloads as argument to the **def create_sighting_object()** function of the **1-analyse_log.py** script.  This is where we link the main script to the **create_XDR_incident.py** script which is the resource script dedicated to XDR Incident creation.
+
+## Run the application
+
+First edit the **config.txt** file and assig the correct values to the application variables
+
+Second run the application 
+
+    python 1-analyse_log.py
+    
+The full analysis report will be located into the **./out** dictectory.
+
+And at the same time a new XDR Incident had been created into XDR. Check it into the XDR Incident Manager.
+
+## Clean Up demo data
+
+Run the **2-delete_XDR_demo_data.py** script in order to completely clean up Data created into XDR.
+
 
