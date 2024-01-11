@@ -49,8 +49,6 @@ And the benefits of this choice is that the signatures are very very easy to wri
 
 This script is able to parse 450 000 lines in less than 3 seconds with 15 signatures !
 
-That means that the first operation done by the script is to load all signatures before going to analysis. 
-
 Don't hesitate to have a look to the signatures add your own.
 
 So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is in our case a very basic correlation rule :
