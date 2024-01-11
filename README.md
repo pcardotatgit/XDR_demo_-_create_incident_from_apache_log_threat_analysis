@@ -4,19 +4,22 @@ This script is a proof of concept of creation of an XDR Incident from a security
 
 In this proof of concept we apply what we learned in the [XDR_create_incident_with_python ](https://github.com/pcardotatgit/XDR_create_incident_with_python) article to a realistic use case.
 
-In the article mentionned above we created an XDR Incident from static demo data. In this article we dynamically create the XDR Incident data from Threat Analysis done on a apache access log file.
+In the article mentionned above we created an XDR Incident from static demo data. In this article we dynamically create the XDR Incident data from Threat Analysis done on an apache access log file.
 
-This use case is a good example of somethoing to deploy in production. It is very easy to deploy.
+This use case is a good example of something to deploy in production on an honeypot for example. It is very easy to deploy.
 
-You just have to setup a Honeypot Apache Web Server, expose it on the INTERNET and install into it the apache log analyser described here and that's it.
+You just have to setup an Honeypot Apache Web Server with the phpmyadmin application installed but without a MySQL database. We don't really need a real MySQL database except if you plan to study MySQL database infection. Expose your web server on the INTERNET.
 
-Within a few hours your web server will be discovered by INTERNET Bots and you will see Web attacks coming. 
+Within a few hours your web server will be discovered by INTERNET Bad guys ( mostly bots ) and you will see Web attacks coming. 
 
-These attackes will be visible into the apache access.log file. 
+These attacks will be visible into the apache access.log file. 
 
-Then you just have to run the application to collect a list of malicious public IP addresses that try to hack your web server and from this create XDR Incident and next add these malicious IP addresses to your XDR blocking feed.
+And the principle of this monitoring system is very simple. As this Web Server is not a production server ( this is an honeypot ) any one who discorver the phpmyadmin application and then tries to log into it, is a confirmed bad guy. So we can add his IP address into our blocking list.
 
-But in order to make this use case pedagogic I added some specifications to the application.
+Then we just have to read the apache logs and search for access attempts to the phpmyadmin application. 
+
+This is exactly the goal of the scripts in this repo. You just have to run the application regularly to collect a list of malicious public IP addresses that try to hack your web server and from this create XDR Incident and next add these malicious IP addresses to your XDR blocking feed.
+
 
 ## How the application work ?
 
@@ -38,21 +41,21 @@ The XDR Incident Creation is managed by the **create_XDR_incident.py** script. Y
 
 This is exactly the same script a little bit modified for fitting to this use case, and use as a ressource by the **1-analyse_log.py** script.
 
-The **1-analyse_log.py** contains the Threat Detection engine. This is a partern matching engine which search for signatures into every log file lines. Patern search is based an compiled regex and is really reasonably fast !!.
+The **1-analyse_log.py** contains the Threat Detection engine. This is a partern matching engine which search for signatures into every log file lines. 
 
-That means that the script will go fast enough for scanning big log files. Performance is not really the goal but still.
+The signatures are statically defined into the python script into the **def parser()** function and basically these signature search of one or two strings into the log line, and time to time count for occurences of these strings. As the Web Server is not a production server but a honeypot, everyone who connect to it, is by definition suspicious then we just confirm this by very basic search on partern that confirm us that. This is a technical choice.
+
+And the benefits of this choice is that the signatures are very very easy to write and incredibely fast !!!
+
+This script is able to parse 450 000 lines in less than 3 seconds with 15 signatures !
 
 That means that the first operation done by the script is to load all signatures before going to analysis. 
 
-Signatures are located into the JSON file named **sigs.json** located in the **./signatures** subdirectory. 
+Don't hesitate to have a look to the signatures add your own.
 
-The JSON format makes it very easy to understand and to modify. You can easily add your own signatures. For example log4J signatures are missing in this version. This can become an interesting additionnal challenge.
+So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is in our case a very basic correlation rule :
 
-Don't hesitate to have a look to the signature file and modify it.
-
-So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is in our case a very basic correlation step :
-
-We save the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same IP address. We keep into a global list a single instance of every malicious IP address.
+We keep the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same IP address. We keep into a global list a single instance of every malicious IP address.
 
 That means that in this project we decide to promote to XDR Incident only one detected Threat. 
 
