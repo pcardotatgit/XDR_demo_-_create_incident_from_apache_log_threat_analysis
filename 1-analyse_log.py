@@ -8,6 +8,30 @@ from crayons import *
 from create_XDR_incident import go_for_incident
 
 observables={}
+
+targets=[
+  {
+    "type": "endpoint",
+    "observables": [
+      {
+        "value": "Public Web Server",
+        "type": "hostname"
+      },
+      {
+        "value": "84.85.86.87",
+        "type": "ip"
+      },
+      {
+        "value": "00:E1:6D:26:24:E9",
+        "type": "mac_address"
+      }
+    ],
+    "observed_time": {
+      "start_time": "2023-09-09T13:31:02.000Z",
+      "end_time": "2023-09-09T13:31:02.000Z"
+    }
+  }
+]
        
 def parser():
     access_logs  = "./input_log_file/access.log"
@@ -87,7 +111,7 @@ def parser():
             print()
             target_list=get_targets()
             observables_objects,observable_relationships=create_json_observables(ip_list,target_list)
-            #go_for_incident(observables_objects,targets,observable_relationships)  
+            go_for_incident(observables_objects,targets,observable_relationships)  
     print()
     print(yellow("- OK ALL DONE !",bold=True))
     
@@ -108,7 +132,9 @@ def get_targets():
 def create_json_observables(ip_list,ip_target): 
     observables=[]
     relationships=[]
-    for item in ip_list:
+    observable_item={'type':'ip','value':ip_target[0]}
+    observables.append(observable_item)     
+    for item in ip_list:   
         observable_item={'type':'ip','value':item}
         observables.append(observable_item)
         relationship_item={

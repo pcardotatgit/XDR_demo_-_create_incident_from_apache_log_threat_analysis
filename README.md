@@ -39,29 +39,35 @@ The core of the application is the **1-analyse_log.py** script. This is the scri
 
 The XDR Incident Creation is managed by the **create_XDR_incident.py** script. You will probably recognize it if you went thru the [XDR_create_incident_with_python ](https://github.com/pcardotatgit/XDR_create_incident_with_python) article.
 
-This is exactly the same script a little bit modified for fitting to this use case, and use as a ressource by the **1-analyse_log.py** script.
+In this repo, this is exactly the same script, just a little bit modified to make it fit to this use case. It is uses as a ressource by the **1-analyse_log.py** script.
 
 The **1-analyse_log.py** contains the Threat Detection engine. This is a partern matching engine which search for signatures into every log file lines. 
 
 The signatures are statically defined into the python script into the **def parser()** function and basically these signature search of one or two strings into the log line, and time to time count for occurences of these strings. As the Web Server is not a production server but a honeypot, everyone who connect to it, is by definition suspicious then we just confirm this by very basic search on partern that confirm us that. This is a technical choice.
 
-And the benefits of this choice is that the signatures are very very easy to write and incredibely fast !!!
+And the benefits of this choice is that the signatures are very very easy to write and incredibly fast !!!
 
-This script is able to parse 450 000 lines in less than 3 seconds with 15 signatures !
+This script ( with 15 signatures ) parses 450 000 lines in less than 3 seconds !
 
 Don't hesitate to have a look to the signatures add your own.
 
-So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is in our case a very basic correlation rule :
+So in this project we use the patern matching engine in order to isolate orphan attacks. And among these detected attacks we had an additionnal analysis level, which is, in our case, a very basic correlation rule :
 
-We keep the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same IP address. We keep into a global list a single instance of every malicious IP address.
+We keep the source IP addresses of the **Admin access attempt on MySQL database thru phpmyadmin** alerts when we see more thean 10 occurences of the alert for the same source IP address. We keep into a global list a single instance of every malicious IP address.
 
 That means that in this project we decide to promote to XDR Incident only one detected Threat. 
 
-Incident promotion is done when we create the resulting file into the **def generate_text_file()** function of the **1-analyse_log.py** script. So this is really another step that happen only after partner matching search is done into the whole log file.
+Incident promotion to XDR is done as the last step after the IDS detection step.
 
-In this part of the code, we pass the list of the malicious IP addresse to the **create_json_observables()** function which create the JSON payloads for observables and observable_relationships. Regarding the target JSON payload, as we only have one target ( the webe server ) and we know it I decided to declare it into static variable. 
+In this last part of the process, we pass the list of the malicious IP addresse to the **create_json_observables()** function which create the JSON payloads for observables and observable_relationships and target. 
+
+Malicious observables are added on the fly into the **observables** global list every time the threat is detected into the log line. This is the role of the **keep_this_ip_in_observables()** function.
+
+Regarding the target JSON payload, as we only have one target ( the honeypot web server ) and we already know it I decided to declare it into static variable into the **def get_targets()** function.
 
 The next step is to pass these payloads as argument to the **def create_sighting_object()** function of the **1-analyse_log.py** script.  This is where we link the main script to the **create_XDR_incident.py** script which is the resource script dedicated to XDR Incident creation.
+
+If you want to customize this script for another use case, then you have to modify the **def get_targets()** and **keep_this_ip_in_observables()** functions and make them parse the source and create the observable, target list and observable relationships.
 
 ## Run the application
 

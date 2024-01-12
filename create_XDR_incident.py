@@ -9,6 +9,7 @@ from crayons import *
 import json
 import sys
 import requests
+import os.path
 
 # Set global variable
 description ='**Description:** Malicious IP addresses Attacked a Company Web Server'
@@ -137,9 +138,13 @@ def check_ctr_token(host,host_for_token,ctr_client_id,ctr_client_password):
     '''
         check current ctr and if this one is not valid then generate a new one
     '''
-    fa = open("ctr_token.txt", "r")
-    access_token = fa.readline()
-    fa.close() 
+    path = './ctr_token.txt'
+    if os.path.isfile(path):
+        fa = open("ctr_token.txt", "r")
+        access_token = fa.readline()
+        fa.close() 
+    else:
+        access_token=get_ctr_token(host_for_token,ctr_client_id,ctr_client_password)
     url = "/ctia/incident/search"
     offset=0
     limit=1
